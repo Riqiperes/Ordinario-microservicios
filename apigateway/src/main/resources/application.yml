@@ -1,0 +1,63 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: apigateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            allowedHeaders: "*"
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: productos-service
+          uri: lb://productos-service
+          predicates:
+            - Path=/productos/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: productosCB
+                fallbackUri: forward:/fallback/productos
+        - id: ordenes-service
+          uri: lb://ordenes-service
+          predicates:
+            - Path=/ordenes/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ordenesCB
+                fallbackUri: forward:/fallback/ordenes
+        - id: pagos-service
+          uri: lb://pagos-service
+          predicates:
+            - Path=/pagos/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: pagosCB
+                fallbackUri: forward:/fallback/pagos
+        - id: clientes-service
+          uri: lb://clientes-service
+          predicates:
+            - Path=/clientes/**
+        - id: message-broker-be
+          uri: lb://message-broker-be
+          predicates:
+            - Path=/retry/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
