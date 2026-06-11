@@ -1,0 +1,71 @@
+# 🚀 Guía de Despliegue - Surtido Express
+
+Este proyecto utiliza una arquitectura de microservicios robusta con comunicación asíncrona mediante Kafka y persistencia políglota (MongoDB y PostgreSQL).
+
+## 🛠️ Requisitos Previos
+- **Docker Desktop** instalado y en ejecución.
+- **Node.js** (v18+) y **NPM**.
+- **Java 17** (si deseas correr los servicios localmente sin Docker).
+
+---
+
+## 🏗️ Paso 1: Levantar la Infraestructura y Servicios (Docker)
+
+Desde la carpeta raíz `Ordinario-microservicios`, ejecuta:
+
+```powershell
+docker-compose up --build -d
+```
+
+Esto levantará 14 contenedores:
+1.  **Postgres**: Base de datos para el Broker (Envíos).
+2.  **MongoDB**: Base de datos para Productos, Órdenes, Pagos y Clientes.
+3.  **Zookeeper & Kafka**: Gestión de mensajes entre servicios.
+4.  **Kafka-UI**: Visualizador de tópicos en `http://localhost:8090`.
+5.  **Eureka Server**: Discovery service en `http://localhost:8761`.
+6.  **API Gateway**: Punto de entrada único en `http://localhost:8080`.
+7.  **Microservicios**: Productos, Órdenes, Pagos, Clientes y Message Broker.
+8.  **Mailhog**: Servidor de correos de prueba en `http://localhost:8025`.
+
+---
+
+## 💻 Paso 2: Levantar el Frontend
+
+Navega a la carpeta `ORD-MICROSERVICIOS-FRONTEND` y ejecuta:
+
+```powershell
+# Instalar dependencias (solo la primera vez)
+npm install
+
+# Iniciar en modo desarrollo
+npm run dev
+```
+
+El sistema estará disponible en: **`http://localhost:5173`**
+
+---
+
+## 📧 Confirmaciones de Correo
+El sistema envía notificaciones automáticas cuando:
+- Se crea una orden (descuento de inventario).
+- Se recibe un pago.
+- Se completa un envío.
+
+Puedes ver estos correos en tiempo real abriendo **Mailhog** en tu navegador:
+👉 [http://localhost:8025](http://localhost:8025)
+
+---
+
+## 🚦 Flujo de Prueba Recomendado
+1.  **Clientes**: Registra un nuevo cliente.
+2.  **Productos**: Crea un par de productos con stock (ej. 50).
+3.  **Órdenes**: Genera una orden para el cliente y producto creado. Verás que el stock disminuye automáticamente en la tabla de productos.
+4.  **Pagos**: Busca la orden por su ID y realiza un pago por el total.
+5.  **Envíos**: Una vez pagada, la orden aparecerá automáticamente en la sección de Envíos.
+6.  **Correos**: Revisa Mailhog para ver las notificaciones enviadas.
+
+---
+
+## 🔍 Notas de Mantenimiento
+- Si un servicio falla al iniciar, el **Message Broker** tiene un sistema de reintentos automático que puedes monitorear en el Dashboard.
+- El API Gateway maneja CORS para permitir la conexión desde el frontend de React.
