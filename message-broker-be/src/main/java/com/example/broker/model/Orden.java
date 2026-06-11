@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Orden {
     @Id
     private String id;
+    private String clienteId;
     private String productoId;
     private Integer cantidad;
     private Double montoTotal;
